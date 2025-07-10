@@ -130,7 +130,6 @@ const updateProductDetails = () => {
   };
 };
 
-
 // значение метрики для конкретной даты
 const getMetricValue = (metricKey, date) => {
   if (!productData.value.length) return "-";
@@ -262,6 +261,10 @@ watch(() => route.params.nm_id, loadData);
 
   .product-info {
     max-width: 100%;
+  }
+
+  .product-view {
+    padding: 0px;
   }
 }
 </style>

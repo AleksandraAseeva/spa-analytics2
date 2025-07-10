@@ -86,7 +86,7 @@ const { filters, loadFilters } = useFilterManagement({
   oblast: "",
   category: "",
   brand: "",
-  last_change_date: ""
+  last_change_date: "",
 });
 
 // Работа с данными
@@ -117,7 +117,8 @@ const filteredData = computed(() => {
       (!filters.oblast || item.oblast === filters.oblast) &&
       (!filters.category || item.category === filters.category) &&
       (!filters.brand || item.brand === filters.brand) &&
-      (!filters.last_change_date || item.last_change_date === filters.last_change_date)
+      (!filters.last_change_date ||
+        item.last_change_date === filters.last_change_date)
     );
   });
 });
@@ -149,7 +150,6 @@ const last_change_dates = computed(() =>
 const nm_ids = computed(() =>
   getUniqueValues(currentPeriodData.value, "nm_id")
 );
-
 
 const goToProductPage = (nm_id) => {
   router.push({
@@ -249,6 +249,8 @@ onMounted(async () => {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .metric-chart {
@@ -270,6 +272,10 @@ onMounted(async () => {
   .filter-select {
     width: 100%;
     min-width: auto;
+  }
+
+  .products-page {
+    padding: 0px;
   }
 }
 </style>
