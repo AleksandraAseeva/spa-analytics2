@@ -33,7 +33,7 @@ export function useProductData() {
       });
 
       const response = await fetch(
-        `http://109.73.206.144:6969/api/orders?${params}`
+        `/api/orders?${params}`
       );
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
