@@ -68,7 +68,6 @@ import ProductsWithPagination from "@/components/ProductsWithPagination.vue";
 import ChartComponent from "@/components/ChartComponent.vue";
 import TableComponent from "@/components/TableComponent.vue";
 import ApiFilter from "@/components/ApiFilter.vue";
-import { API_BASE_URL } from '@/config';
 
 // Реактивные данные
 const apiFilters = ref({
@@ -181,7 +180,7 @@ const fetchProducts = async () => {
   error.value = null;
   apiRequestError.value = false;
   try {
-    const url = new URL(`${API_BASE_URL}/sales`);
+    const url = new URL("/api/incomes", window.location.origin);
 
     Object.entries(apiFilters.value).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
