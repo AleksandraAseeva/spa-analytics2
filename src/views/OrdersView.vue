@@ -198,7 +198,7 @@ const fetchProducts = async () => {
   error.value = null;
   apiRequestError.value = false;
   try {
-    const url = new URL("/api/orders");
+    const url = new URL("/api/orders", window.location.origin);
 
     Object.entries(apiFilters.value).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
