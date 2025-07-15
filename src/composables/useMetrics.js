@@ -6,11 +6,11 @@ export function useMetrics() {
   const processMetricData = (data, metricKey) => {
     if (!data || !Array.isArray(data)) return {};
 
-    const { monday, nextMonday } = getWeekDates();
+    const { monday, sunday } = getWeekDates();
     const weekDates = [];
     const currentDate = new Date(monday);
 
-    while (currentDate < nextMonday) {
+    while (currentDate <= sunday) {
       weekDates.push(currentDate.toISOString().split("T")[0]);
       currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -43,15 +43,21 @@ export function useMetrics() {
   };
 
   const getChartData = (metricKey, metrics, data) => {
-    const metricData = processMetricData(data, metricKey);
-    const { monday, nextMonday } = getWeekDates();
+    const { monday, sunday } = getWeekDates();
     const weekDates = [];
-    const currentDate = new Date(monday);
 
-    while (currentDate < nextMonday) {
+    const currentDate = new Date(monday);
+    while (currentDate <= sunday) {
       weekDates.push(currentDate.toISOString().split("T")[0]);
       currentDate.setDate(currentDate.getDate() + 1);
     }
+
+    const currentWeekData = data.filter((item) => {
+      const itemDate = item.date?.split(" ")[0];
+      return itemDate && weekDates.includes(itemDate);
+    });
+
+    const metricData = processMetricData(currentWeekData, metricKey);
 
     const chartData = weekDates.map((date) => {
       const d = metricData[date] || { count: 0, sum: 0 };
@@ -75,8 +81,34 @@ export function useMetrics() {
   };
 
   const getTopProducts = (metricKey, currentData, previousData, limit = 5) => {
-    if (!currentData || !previousData) return [];
     if (!currentData || !Array.isArray(currentData)) return [];
+    if (currentData.length === 1 && currentData[0]?.nm_id) {
+      const item = currentData[0];
+      const result = {
+        nm_id: item.nm_id,
+        current: 0,
+        previous: 0,
+        change: 0,
+        isIncrease: false,
+      };
+
+      switch (metricKey) {
+        case "sales_count":
+          result.current = 1;
+          break;
+        case "avg_price":
+          result.current = parseFloat(item.total_price) || 0;
+          break;
+        case "cancel_count":
+          result.current = item.is_cancel ? 1 : 0;
+          break;
+        case "avg_discount":
+          result.current = parseFloat(item.discount_percent) || 0;
+          break;
+      }
+
+      return [result];
+    }
     if (!previousData) previousData = [];
 
     const products = {};
@@ -129,26 +161,54 @@ export function useMetrics() {
       }
     });
 
-    const result = Object.entries(products)
-      .map(([nm_id, values]) => {
-        const change = values.previous
-          ? ((values.current - values.previous) / values.previous) * 100
-          : values.current > 0
-          ? 100
-          : 0;
+    const currentNmIds = Object.keys(products);
+    previousData.forEach((item) => {
+      if (!item?.nm_id) return;
 
-        return {
-          nm_id,
-          current: values.current,
-          previous: values.previous,
-          change: parseFloat(change.toFixed(2)),
-          isIncrease: change > 0,
-        };
-      })
-      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
-    return typeof limit === "number" && limit > 0
-      ? result.slice(0, limit)
-      : result;
+      const nm_id = item.nm_id.toString();
+      if (currentNmIds.includes(nm_id)) {
+        switch (metricKey) {
+          case "sales_count":
+            products[nm_id].previous += 1;
+            break;
+          case "avg_price":
+            products[nm_id].previous += parseFloat(item.total_price) || 0;
+            break;
+          case "cancel_count":
+            if (item.is_cancel) products[nm_id].previous += 1;
+            break;
+          case "avg_discount":
+            products[nm_id].previous += parseFloat(item.discount_percent) || 0;
+            break;
+        }
+      }
+    });
+
+    const result = Object.entries(products).map(([nm_id, values]) => {
+      const change = values.previous
+        ? ((values.current - values.previous) / values.previous) * 100
+        : values.current > 0
+        ? 100
+        : 0;
+
+      return {
+        nm_id,
+        current: values.current,
+        previous: values.previous,
+        change: parseFloat(change.toFixed(2)),
+        isIncrease: change > 0,
+      };
+    });
+
+    if (currentNmIds.length === 1) {
+      return result;
+    }
+
+    const sorted = result.sort(
+      (a, b) => Math.abs(b.change) - Math.abs(a.change)
+    );
+
+    return limit ? sorted.slice(0, limit) : sorted;
   };
 
   return {

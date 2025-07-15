@@ -64,7 +64,6 @@
 import { computed, ref, onMounted, onBeforeUnmount  } from 'vue';
 import { defineProps, defineEmits } from 'vue'; 
 
-// Добавляем отслеживание размера экрана
 const isMobile = ref(false);
 
 const checkScreenSize = () => {
@@ -98,15 +97,12 @@ const props = defineProps({
 const emit = defineEmits(['row-click']);
 
 const validItems = computed(() => {
-  if (!props.items) return [];
   
-  return props.items.filter(item => 
-    item && 
-    item.nm_id !== undefined && 
-    item.current !== undefined && 
-    item.previous !== undefined &&
-    item.change !== undefined
-  );
+  if (!props.items) return [];
+
+  if (props.items.length === 1) return props.items;
+  
+  return [...props.items].sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
 });
 
 const shouldShowTable = computed(() => {
@@ -173,7 +169,6 @@ const getChangeIndicator = (item) => {
   margin-top: 10px;
 }
 
-/* Стили для десктопной таблицы */
 .top-products-table {
   width: 100%;
   border-collapse: collapse;

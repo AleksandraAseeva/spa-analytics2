@@ -10,13 +10,20 @@ export function useProductData() {
   const getWeekDates = (baseDate = new Date()) => {
     const date = new Date(baseDate);
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
 
-    const monday = new Date(date.setDate(diff));
-    const nextMonday = new Date(monday);
-    nextMonday.setDate(monday.getDate() + 7);
+    const diffToMonday = day === 0 ? -6 : 1 - day;
 
-    return { monday, nextMonday };
+    const monday = new Date(date);
+    monday.setDate(date.getDate() + diffToMonday);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    return {
+      monday,
+      nextMonday: new Date(monday.getTime() + 7 * 24 * 60 * 60 * 1000),
+      sunday: new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000),
+    };
   };
 
   const fetchDayData = async (date, apiKey) => {
@@ -52,24 +59,24 @@ export function useProductData() {
 
     try {
       const now = new Date();
-      const { monday, nextMonday } = getWeekDates(
+      const { monday, sunday } = getWeekDates(
         period === "previous" ? new Date(now.setDate(now.getDate() - 7)) : now
       );
 
       const dates = [];
       const currentDate = new Date(monday);
-      while (currentDate < nextMonday) {
+      while (currentDate <= sunday) {
         dates.push(new Date(currentDate));
         currentDate.setDate(currentDate.getDate() + 1);
       }
 
-   const allData = [];
-    for (const date of dates) {
-      const response = await fetchDayData(date, apiKey);
-      if (response.data) {
-        allData.push(...response.data);
+      const allData = [];
+      for (const date of dates) {
+        const response = await fetchDayData(date, apiKey);
+        if (response.data) {
+          allData.push(...response.data);
+        }
       }
-    }
       return allData;
     } catch (err) {
       error.value = err.message;
@@ -79,10 +86,11 @@ export function useProductData() {
     }
   };
 
-  const getUniqueValues = (data, key) => {
-    return [...new Set(data.map((item) => item[key]))].filter(Boolean);
-  };
-
+const getUniqueValues = (data, key) => {
+  const values = new Set();
+  data.forEach(item => values.add(String(item[key])));
+  return Array.from(values).sort();
+};
   return {
     currentPeriodData,
     previousPeriodData,

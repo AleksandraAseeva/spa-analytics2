@@ -2,13 +2,18 @@ export function useDateUtils() {
   const getWeekDates = (baseDate = new Date()) => {
     const date = new Date(baseDate);
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
     
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
     const monday = new Date(date.setDate(diff));
-    const nextMonday = new Date(monday);
-    nextMonday.setDate(monday.getDate() + 7);
-
-    return { monday, nextMonday };
+    
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    
+    return { 
+      monday, 
+      sunday,
+      nextMonday: new Date(monday.getTime() + 7 * 24 * 60 * 60 * 1000)
+    };
   };
 
   const formatDateLabel = (dateString) => {

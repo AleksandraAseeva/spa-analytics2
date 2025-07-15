@@ -3,7 +3,7 @@
     <div class="products-grid">
       <div
         v-for="product in paginatedProducts"
-        :key="product.id"
+        :key="product.nm_id"
         class="product-card"
       >
         <div class="product-info">
