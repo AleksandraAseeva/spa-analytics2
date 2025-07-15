@@ -194,7 +194,7 @@ const fetchProducts = async () => {
   apiRequestError.value = false;
 
   try {
-    const url = new URL("http://109.73.206.144:6969/api/stocks");
+    const url = new URL("/api/stocks", window.location.origin);
 
     Object.entries(apiFilters.value).forEach(([key, value]) => {
       if (value != null) url.searchParams.append(key, value);

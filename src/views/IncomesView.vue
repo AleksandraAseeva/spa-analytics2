@@ -180,7 +180,7 @@ const fetchProducts = async () => {
   error.value = null;
   apiRequestError.value = false;
   try {
-    const url = new URL("http://109.73.206.144:6969/api/incomes");
+    const url = new URL("/api/incomes", window.location.origin);
 
     Object.entries(apiFilters.value).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
